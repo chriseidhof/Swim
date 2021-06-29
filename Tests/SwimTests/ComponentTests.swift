@@ -28,6 +28,15 @@ class ComponentTests: XCTestCase {
             }
         }
         
-        XCTAssertEqual(MyComponent().readPreference(key: UseJavascript.self), true)
+        struct Sample: Component {
+            @ComponentBuilder var body: some Component {
+                HTML.p { }
+                MyComponent()
+            }
+        }
+        
+        let result = Sample()
+        XCTAssertEqual(result.readPreference(key: UseJavascript.self), true)
+        print(result.rendered)
     }
 }
