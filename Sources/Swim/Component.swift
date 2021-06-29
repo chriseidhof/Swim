@@ -51,14 +51,14 @@ struct AnyBuiltin: BuiltinComponent {
     func readPreference<Key>(key: Key.Type) -> Key.Value? where Key : PreferenceKey {
         b.readPreference(key: key)
     }
-    func render() -> Node {
-        b.render()
+    func render(environment: EnvironmentValues) -> Node {
+        b.render(environment: environment)
     }
 }
 
 // A private protocol
 protocol BuiltinComponent {
-    func render() -> Node
+    func render(environment: EnvironmentValues) -> Node
     func readPreference<Key: PreferenceKey>(key: Key.Type) -> Key.Value?
 }
 
@@ -71,8 +71,8 @@ struct PreferenceWriter<C: Component, P: PreferenceKey>: Component, BuiltinCompo
     var child: C
     var value: P.Value
     
-    func render() -> Node {
-        AnyBuiltin(child).render()
+    func render(environment: EnvironmentValues) -> Node {
+        AnyBuiltin(child).render(environment: environment)
     }
     
     func readPreference<Key>(key: Key.Type) -> Key.Value? where Key : PreferenceKey {
@@ -95,11 +95,12 @@ extension Component {
 }
 
 extension Node: Component & BuiltinComponent {
+    func render(environment: EnvironmentValues) -> Node {
+        self
+    }
+    
     func readPreference<Key>(key: Key.Type) -> Key.Value? where Key : PreferenceKey {
         return nil
-    }
-    func render() -> Node {
-        self
     }
 }
 
@@ -113,9 +114,9 @@ public struct Pair<L, R>: Component, BuiltinComponent where L: Component, R: Com
 //        try value.0.builtin.run(environment: environment)
 //        try value.1.builtin.run(environment: environment)
 //    }
-    @NodeBuilder func render() -> Node {
-        AnyBuiltin(value.0).render()
-        AnyBuiltin(value.1).render()
+    @NodeBuilder func render(environment: EnvironmentValues) -> Node {
+        AnyBuiltin(value.0).render(environment: environment)
+        AnyBuiltin(value.1).render(environment: environment)
     }
     
     func readPreference<Key>(key: Key.Type) -> Key.Value? where Key : PreferenceKey {
@@ -131,7 +132,7 @@ public struct Pair<L, R>: Component, BuiltinComponent where L: Component, R: Com
 }
 
 extension Component {
-    public var rendered: Node {
-        AnyBuiltin(self).render()
+    public func render() -> Node {
+        AnyBuiltin(self).render(environment: EnvironmentValues())
     }
 }
